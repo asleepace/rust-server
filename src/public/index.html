@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Server</title>
+        <link rel="icon" type="image/x-icon" href="favicon.png" />
+        <link rel="stylesheet" type="text/css" href="index.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="An all in one server framework." />
+        <meta name="keywords" content="server, rust, web, http, routes" />
+        <meta name="author" content="Colin Teahan" />
+        <meta name="robots" content="index, follow" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="language" content="English" />
+        <meta name="generator" content="Visual Studio Code" />
+        <meta name="distribution" content="global" />
+        <meta name="rating" content="general" />
+        <!-- <meta name="theme-color" content="#1d1d1d" /> -->
+    </head>
+    <body>
+        <nav>
+            <a id="site-logo" href="/"><h3>serverOS</h3></a>
+        </nav>
+        <article>
+            <h1>Welcome!</h1>
+            <p>
+                To get started with the server all you need to do is create an
+                instance and handle the routes via pattern matching.
+            </p>
+            <pre>
+            <code>
+let server = Server::new();
+
+server.route("/", |sr| {
+    sr.file("index.html")
+});
+
+server.start();</code>
+            </pre>
+            <p>
+                Along with this you can handle any number of routes, errors and
+                much much more! There are many cool features to explore with
+                this new server framework, which in part is inspired by the
+                cPanel days of old.
+            </p>
+            <ul>
+                <li>
+                    <a
+                        href="https://webkit.org/blog/10042/wide-gamut-color-in-css-with-display-p3/"
+                        >Wide Gamut Color in CSS with Display-P3</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="https://colorhunt.co/palette/607274faeed1ded0b6b2a59b"
+                    >
+                        Color Hunt Palette</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="https://developer.okta.com/blog/2021/10/18/security-headers-best-practices"
+                    >
+                        HTTP Security Headers Best Practices
+                    </a>
+                </li>
+            </ul>
+            <div class="row-button-list">
+                <a href="/info"><button>Server info</button></a>
+                <a href="/log"><button>Event Logs</button></a>
+                <a href="/online"><button>Connections</button></a>
+            </div>
+        </article>
+    </body>
+</html>
