@@ -2,8 +2,6 @@ use crate::core::method::Method;
 use crate::core::request::Request;
 use std::collections::HashMap;
 
-use super::request;
-
 pub type RouteActions = Result<u8, std::io::Error>;
 pub type RouteHandler = fn(&mut Request) -> RouteActions;
 
@@ -32,9 +30,21 @@ impl Routes {
         match self.routes.get(&Method::from(&request.method)) {
             Some(method_map) => match method_map.get(&request.uri) {
                 Some(handler) => Some(*handler),
-                None => None,
+                None => match method_map.get("*") {
+                    Some(handler) => Some(*handler),
+                    None => None,
+                },
             },
-            None => None,
+            None => match self.routes.get(&Method::GET) {
+                Some(method_map) => match method_map.get("*") {
+                    Some(handler) => Some(*handler),
+                    None => None,
+                },
+                None => {
+                    println!("[routes] no route found for: {}", request.uri);
+                    None
+                }
+            },
         }
     }
 

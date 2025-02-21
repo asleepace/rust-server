@@ -1,4 +1,6 @@
-use std::io::{self, Write};
+use std::io::{self, Read, Write};
+
+use super::mime::get_mime_type;
 
 pub type Bytes = Vec<u8>;
 pub type Headers = Vec<(String, String)>;
@@ -14,29 +16,25 @@ pub struct HttpResponse {
     body: Bytes,
 }
 
-impl HttpResponse {
-    pub fn new(status: u16, status_text: &str, headers: Headers, body: Bytes) -> Self {
-        HttpResponse {
-            status,
-            status_text: status_text.to_string(),
-            headers,
-            body,
-        }
-    }
-}
+// impl HttpResponse {
+//     pub fn new(status: u16, status_text: &str, headers: Headers, body: Bytes) -> Self {
+//         HttpResponse {
+//             status,
+//             status_text: status_text.to_string(),
+//             headers,
+//             body,
+//         }
+//     }
+// }
 
 /// Create a response from a file
 pub fn static_file(file_path: &str) -> HttpResponse {
-    match std::fs::read_to_string(file_path) {
-        Ok(file) => {
-            return HttpResponse {
-                status: 200,
-                status_text: "OK".to_string(),
-                headers: vec![("Content-Type".to_string(), "text/html".to_string())],
-                body: file.as_bytes().to_vec(),
-            };
-        }
+    let public_file_path = format!("src/public{}", file_path);
+
+    let file = match std::fs::File::open(&public_file_path) {
+        Ok(file) => file,
         Err(e) => {
+            eprintln!("[http] {} error: {}", public_file_path, e);
             return HttpResponse {
                 status: 404,
                 status_text: "Not Found".to_string(),
@@ -44,6 +42,20 @@ pub fn static_file(file_path: &str) -> HttpResponse {
                 body: format!("File not found: {}", e).as_bytes().to_vec(),
             };
         }
+    };
+
+    let mime = get_mime_type(&public_file_path);
+    let metadata = file.metadata().unwrap();
+    let bytes = file.bytes().map(|b| b.unwrap()).collect::<Vec<u8>>();
+
+    HttpResponse {
+        status: 200,
+        status_text: "OK".to_string(),
+        headers: vec![
+            ("Content-Type".to_string(), mime),
+            ("Content-Length".to_string(), metadata.len().to_string()),
+        ],
+        body: bytes,
     }
 }
 
@@ -52,7 +64,7 @@ pub fn static_file(file_path: &str) -> HttpResponse {
 /// This is used to send the response over a TcpStream.
 pub trait HttpCodec {
     fn encode_to(&self, buffer: &mut impl Write) -> io::Result<usize>;
-    fn encode(&self, buffer: &mut Bytes);
+    // fn encode(&self, buffer: &mut Bytes);
 }
 
 impl HttpCodec for HttpResponse {
@@ -88,40 +100,40 @@ impl HttpCodec for HttpResponse {
         Ok(written)
     }
 
-    /// Encode the response into a byte buffer.
-    fn encode(&self, buffer: &mut Bytes) {
-        // Pre-calculate capacity to avoid reallocations
-        let headers_size = self
-            .headers
-            .iter()
-            .map(|(k, v)| k.len() + v.len() + 4) // 4 for ": " and CRLF
-            .sum::<usize>();
+    // /// Encode the response into a byte buffer.
+    // fn encode(&self, buffer: &mut Bytes) {
+    //     // Pre-calculate capacity to avoid reallocations
+    //     let headers_size = self
+    //         .headers
+    //         .iter()
+    //         .map(|(k, v)| k.len() + v.len() + 4) // 4 for ": " and CRLF
+    //         .sum::<usize>();
 
-        let total_size = HTTP_VERSION.len() +
-                4 + // status code + space
-                self.status_text.len() +
-                2 + // CRLF
-                headers_size +
-                2 + // Headers terminator CRLF
-                self.body.len();
+    //     let total_size = HTTP_VERSION.len() +
+    //             4 + // status code + space
+    //             self.status_text.len() +
+    //             2 + // CRLF
+    //             headers_size +
+    //             2 + // Headers terminator CRLF
+    //             self.body.len();
 
-        buffer.reserve(total_size);
+    //     buffer.reserve(total_size);
 
-        // Now do the actual writing
-        buffer.extend_from_slice(HTTP_VERSION);
-        buffer.extend_from_slice(self.status.to_string().as_bytes());
-        buffer.extend_from_slice(b" ");
-        buffer.extend_from_slice(self.status_text.as_bytes());
-        buffer.extend_from_slice(HTTP_CRLF);
+    //     // Now do the actual writing
+    //     buffer.extend_from_slice(HTTP_VERSION);
+    //     buffer.extend_from_slice(self.status.to_string().as_bytes());
+    //     buffer.extend_from_slice(b" ");
+    //     buffer.extend_from_slice(self.status_text.as_bytes());
+    //     buffer.extend_from_slice(HTTP_CRLF);
 
-        for (key, value) in &self.headers {
-            buffer.extend_from_slice(key.as_bytes());
-            buffer.extend_from_slice(b": ");
-            buffer.extend_from_slice(value.as_bytes());
-            buffer.extend_from_slice(HTTP_CRLF);
-        }
+    //     for (key, value) in &self.headers {
+    //         buffer.extend_from_slice(key.as_bytes());
+    //         buffer.extend_from_slice(b": ");
+    //         buffer.extend_from_slice(value.as_bytes());
+    //         buffer.extend_from_slice(HTTP_CRLF);
+    //     }
 
-        buffer.extend_from_slice(HTTP_CRLF);
-        buffer.extend_from_slice(&self.body);
-    }
+    //     buffer.extend_from_slice(HTTP_CRLF);
+    //     buffer.extend_from_slice(&self.body);
+    // }
 }

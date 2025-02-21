@@ -2,10 +2,12 @@
 // pub mod worker;
 pub mod http;
 pub mod method;
+pub mod mime;
 pub mod request;
 pub mod routes;
 pub mod server;
 pub mod traits;
+pub mod util;
 
 // pub use message::Message;
 // pub use worker::Worker;

@@ -57,7 +57,7 @@ impl Request {
         if n == 0 {
             return Err(io::Error::new(ErrorKind::InvalidData, "Empty request"));
         } else {
-            println!("[request] read {} / {} bytes", n, Self::MAX_PEEK_SIZE);
+            // println!("[request] read {} / {} bytes", n, Self::MAX_PEEK_SIZE);
         }
 
         // find the first line ending in the buffer (use memchr for performance?)
@@ -106,8 +106,25 @@ impl Request {
     /// Sends a request as raw bytes over the TcpStream.
     pub fn send(&mut self, res: impl HttpCodec) -> http::Response {
         res.encode_to(&mut self.stream)?;
-        self.stream.flush()?;
+        self.close()?;
         Ok(200)
+    }
+
+    pub fn send_static_file(&mut self, file_path: &str) -> http::Response {
+        let res = http::static_file(file_path);
+        self.send(res)
+    }
+
+    /// Flushes the TcpStream and shuts down the connection.
+    pub fn close(&mut self) -> Result<(), std::io::Error> {
+        println!("[request] closing {}", self.uri());
+        self.stream.flush()?;
+        self.stream.shutdown(std::net::Shutdown::Both)?;
+        Ok(())
+    }
+
+    pub fn stream(&self) -> &TcpStream {
+        &self.stream
     }
 
     #[inline]

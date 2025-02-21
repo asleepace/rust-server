@@ -30,7 +30,7 @@ impl Server {
     }
 
     /// Start the server
-    pub fn start(&self) {
+    pub fn start(&mut self) {
         println!("[server] starting server...");
         for stream in self.listener.incoming() {
             match stream {
@@ -42,15 +42,26 @@ impl Server {
 
     /// handle connection
     pub fn handle_connection(&self, stream: TcpStream) {
-        println!("Incoming connection from: {}", stream.peer_addr().unwrap());
-        let mut request = Request::from(stream).unwrap();
-        self.routes.read(|routes| match routes.find(&mut request) {
-            None => println!("[server] no route found for: {}", request.uri),
-            Some(handler) => match handler(&mut request) {
-                Ok(_) => println!("[server] route success: {}", request.uri),
-                Err(e) => println!("[server] route error: {}", e),
-            },
-        })
+        println!("[server] connecting {}", stream.peer_addr().unwrap());
+        let mut request = match Request::from(stream) {
+            Err(error) => panic!("[server] error: {}", error),
+            Ok(request) => request,
+        };
+
+        let handler = match self.routes.read(|routes| routes.find(&mut request)) {
+            Some(handler) => handler,
+            None => {
+                println!("[server] no route found for: {}", request.uri);
+                return;
+            }
+        };
+
+        match handler(&mut request) {
+            Ok(_) => {
+                // request.close()
+            }
+            Err(error) => panic!("[server] route handler error: {}", error),
+        };
     }
 
     pub fn configure(&self, f: impl FnOnce(&mut RouteBuilder) -> ()) {
