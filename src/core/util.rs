@@ -22,25 +22,41 @@ pub fn sanitize_path(path: &str) -> String {
         .to_string()
 }
 
-/// Find Static File
-/// Attempts to find a static file in the public directory.
-/// Will sanitize the path and return a 404 if the file is not found.
+pub fn public(path: &str) -> String {
+    if path.starts_with(PUBLIC_DIR) {
+        path.to_string()
+    } else if path.starts_with("/") {
+        format!("{}{}", PUBLIC_DIR, path)
+    } else {
+        format!("{}/{}", PUBLIC_DIR, path)
+    }
+}
+
 pub fn find_static_file(uri: &str) -> String {
     let path = sanitize_path(uri);
     let file_path = match path.as_str() {
         "" | "/" => format!("{}/index.html", PUBLIC_DIR),
-        path if !path.starts_with(PUBLIC_DIR) => format!("{}{}", PUBLIC_DIR, path),
+        path if path.ends_with("/") => format!("{}index.html", path),
         _ => path.to_string(),
     };
-    fs::exists(&file_path)
-        .map(|exists| if exists { &file_path } else { HTML_NOT_FOUND })
-        .unwrap_or(HTML_NOT_FOUND)
-        .to_string()
+    let public_path = public(&file_path);
+    println!("[util] public path {}", public_path);
+    let file_exists = match fs::exists(&public_path) {
+        Ok(exists) => exists,
+        Err(e) => {
+            eprintln!("[util] error checking file: {}", e);
+            false
+        }
+    };
+
+    if file_exists {
+        println!("[util] found file: {}", public_path);
+        public_path
+    } else {
+        HTML_NOT_FOUND.to_string()
+    }
 }
 
-/// Copy Static File
-/// Attempts to copy a static file from the public directory to the response.
-///
 pub fn copy_static_file(request: &mut Request, path: String) -> http::Response {
     println!("[main] static route: {}", path);
     let mut reader = File::open(&path)?;
@@ -48,7 +64,7 @@ pub fn copy_static_file(request: &mut Request, path: String) -> http::Response {
     let mut writer = request.stream();
 
     // write status code
-    bytes_sent += writer.write(b"HTTP/1.1 200 OK")?;
+    bytes_sent += writer.write(b"HTTP/2.0 200 OK")?;
     bytes_sent += writer.write(HTTP_CRLF)?;
 
     let mime = get_mime_type(&path);

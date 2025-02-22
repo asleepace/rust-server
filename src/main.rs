@@ -34,6 +34,7 @@ fn get_home_page(request: &mut Request) -> http::Response {
 // example catch-all route
 fn get_catch_all(request: &mut Request) -> http::Response {
     let static_file = util::find_static_file(request.uri());
+    println!("[server] static file: {}", static_file);
     util::copy_static_file(request, static_file)?;
     Ok(200)
 }
