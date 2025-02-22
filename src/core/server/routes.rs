@@ -1,5 +1,5 @@
-use crate::core::method::Method;
-use crate::core::request::Request;
+use crate::core::http::Method;
+use crate::core::http::Request;
 use std::collections::HashMap;
 
 pub type RouteActions = Result<u8, std::io::Error>;

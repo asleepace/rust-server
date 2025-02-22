@@ -1,5 +1,5 @@
+use crate::core::get_mime_type;
 use crate::core::http;
-use crate::core::mime::get_mime_type;
 use crate::core::Request;
 use std::f32::consts::PI;
 use std::fmt::format;

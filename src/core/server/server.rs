@@ -1,12 +1,13 @@
+use crate::core::server::routes::RouteBuilder;
 use crate::core::tcp_methods::TcpMethods;
+use crate::core::ArcRwLock;
+use crate::core::Request;
+use crate::core::Routes;
 use crate::core::ThreadSafe;
+
 use std::io::{Error, Write};
 use std::net::{TcpListener, TcpStream};
 use std::thread;
-
-use super::request::Request;
-use super::routes::RouteBuilder;
-use super::{ArcRwLock, Routes};
 
 /// Convenience Init
 pub fn create_server_on(port: u16) -> Server {

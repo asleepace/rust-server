@@ -1,6 +1,6 @@
 use std::io::{self, Read, Write};
 
-use super::mime::get_mime_type;
+use crate::core::get_mime_type;
 
 pub type Bytes = Vec<u8>;
 pub type Headers = Vec<(String, String)>;

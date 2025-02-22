@@ -1,10 +1,10 @@
+use crate::core::http;
+use crate::core::http::HttpCodec;
 use std::{
     collections::HashMap,
     io::{self, ErrorKind, Write},
     net::TcpStream,
 };
-
-use super::http::{self, HttpCodec};
 
 /// A fast and lightweight HTTP request parser which will only
 /// read the first line of the request to obtain the method, uri, and protocol.
@@ -108,11 +108,6 @@ impl Request {
         res.encode_to(&mut self.stream)?;
         self.close()?;
         Ok(200)
-    }
-
-    pub fn send_static_file(&mut self, file_path: &str) -> http::Response {
-        let res = http::static_file(file_path);
-        self.send(res)
     }
 
     /// Flushes the TcpStream and shuts down the connection.

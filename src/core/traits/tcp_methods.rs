@@ -5,11 +5,6 @@ use std::{
 
 static KEEP_ALIVE: &[u8] = b"HTTP/2.0 200 OK\r\nContent-Length: 0\r\n\r\n";
 
-pub enum TcpType {
-    Http,
-    KeepAlive,
-}
-
 pub trait TcpMethods {
     fn is_connected(&self) -> bool;
     fn is_keep_alive(&self) -> bool;
@@ -30,8 +25,7 @@ impl TcpMethods for TcpStream {
 
     fn send_keep_alive(&mut self) -> std::io::Result<()> {
         println!("[tcp_methods] sending keep_alive!");
-        let keep_alive = b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
-        self.write_all(keep_alive)?;
+        self.write_all(KEEP_ALIVE)?;
         self.flush()?;
         Ok(())
     }
