@@ -1,5 +1,6 @@
 pub mod routes;
 pub mod server;
+pub mod worker;
 
 pub use routes::RouteActions;
 pub use routes::RouteBuilder;

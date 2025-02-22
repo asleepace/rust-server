@@ -35,5 +35,7 @@ fn get_home_page(request: &mut Request) -> http::Response {
 fn get_catch_all(request: &mut Request) -> http::Response {
     let static_file = util::find_static_file(request.uri());
     util::copy_static_file(request, static_file)?;
+    request.close()?;
+    let _ = drop(request);
     Ok(200)
 }
