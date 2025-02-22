@@ -10,7 +10,6 @@ static HTTP_CRLF: &[u8] = b"\r\n";
 static HTTP_VERSION: &[u8] = b"HTTP/1.1";
 static HTML_NOT_FOUND: &str = "src/public/404.html";
 static PUBLIC_DIR: &str = "src/public";
-
 static INVALID_CHARS: [&str; 4] = ["..", "~", "\\", " "];
 
 pub fn sanitize_path(path: &str) -> String {
@@ -40,7 +39,6 @@ pub fn find_static_file(uri: &str) -> String {
         _ => path.to_string(),
     };
     let public_path = public(&file_path);
-    println!("[util] public path {}", public_path);
     let file_exists = match fs::exists(&public_path) {
         Ok(exists) => exists,
         Err(e) => {
@@ -50,7 +48,7 @@ pub fn find_static_file(uri: &str) -> String {
     };
 
     if file_exists {
-        println!("[util] found file: {}", public_path);
+        // println!("[util] found file: {}", public_path);
         public_path
     } else {
         HTML_NOT_FOUND.to_string()
@@ -58,7 +56,6 @@ pub fn find_static_file(uri: &str) -> String {
 }
 
 pub fn copy_static_file(request: &mut Request, path: String) -> http::Response {
-    println!("[main] static route: {}", path);
     let mut reader = File::open(&path)?;
     let mut bytes_sent = 0;
     let mut writer = request.stream();

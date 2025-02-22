@@ -1,5 +1,6 @@
+use crate::core::tcp_methods::TcpMethods;
 use crate::core::ThreadSafe;
-use std::io::Error;
+use std::io::{Error, Write};
 use std::net::{TcpListener, TcpStream};
 use std::thread;
 
@@ -47,7 +48,15 @@ impl Server {
 
     /// handle connection
     pub fn handle_connection(&self, stream: TcpStream) {
-        // println!("[server] connecting {}", stream.peer_addr().unwrap());
+        println!("[server] {} {}", "-".repeat(40), "+");
+
+        if stream.is_keep_alive() {
+            println!("[server] keep-alive connection");
+            return;
+        } else {
+            println!("[server] connecting {}", stream.peer_addr().unwrap());
+        }
+
         let mut request = match Request::from(stream) {
             Err(error) => panic!("[server] error: {}", error),
             Ok(request) => request,
@@ -62,7 +71,7 @@ impl Server {
         };
 
         match handler(&mut request) {
-            Err(error) => panic!("[server] route handler error: {}", error),
+            Err(error) => eprintln!("[server] route handler error: {}", error),
             Ok(_) => {
                 thread::spawn(move || {
                     // println!("[server] closing {}", request.uri());

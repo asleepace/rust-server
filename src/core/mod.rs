@@ -6,6 +6,7 @@ pub mod mime;
 pub mod request;
 pub mod routes;
 pub mod server;
+pub mod tcp;
 pub mod traits;
 pub mod util;
 
@@ -17,5 +18,6 @@ pub use request::Request;
 // pub use routes::RouteHandler;
 pub use routes::Routes;
 // pub use server::Server;
+pub use tcp::tcp_methods;
 pub use traits::ArcRwLock;
 pub use traits::ThreadSafe;
