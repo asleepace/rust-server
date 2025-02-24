@@ -10,12 +10,8 @@ fn main() {
     server.configure(|route| {
         // route.def("GET", "/", get_home_page);
         route.def("GET", "*", get_catch_all);
-        // route.def("GET", "/log", |req| {
-        //     req.send(http::static_file("/log.html"))
-        // });
-        // route.def("GET", "/events", |req| {
-        //     req.send(http::static_file("/events.html"))
-        // });
+        route.def("GET", "/log", |req| req.send_static("log.html"));
+        route.def("GET", "/events", |req| req.send_static("events.html"));
     });
 
     server.start();
@@ -36,6 +32,6 @@ fn get_catch_all(request: &mut Request) -> http::Response {
     let static_file = util::find_static_file(request.uri());
     util::copy_static_file(request, static_file)?;
     request.close()?;
-    let _ = drop(request);
+    // let _ = drop(request);
     Ok(200)
 }

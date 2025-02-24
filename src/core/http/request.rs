@@ -1,5 +1,6 @@
 use crate::core::http;
 use crate::core::http::HttpCodec;
+use crate::core::util;
 use std::{
     collections::HashMap,
     io::{self, ErrorKind, Write},
@@ -108,6 +109,15 @@ impl Request {
         res.encode_to(&mut self.stream)?;
         self.close()?;
         Ok(200)
+    }
+
+    /// Calls `find_static_file` and `copy_static_file` to send a static file over the TcpStream.
+    /// Then attempts to close the connection and return the result.
+    pub fn send_static(&mut self, uri: &str) -> http::Response {
+        let static_file = util::find_static_file(uri);
+        let result = util::copy_static_file(self, static_file)?;
+        self.close()?;
+        Ok(result)
     }
 
     /// Flushes the TcpStream and shuts down the connection.
